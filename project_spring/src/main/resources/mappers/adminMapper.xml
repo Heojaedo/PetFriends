@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.mapper.AdminMapper">
+
+	<!-- 펫시터 지원수 -->
+	<select id="count" resultType="int">
+		select count(*) from petsitter where status='지원'
+	</select>
+	
+	<!-- 펫시터 지원 목록 -->
+	<select id="list" resultType="Petsitter_MemberVO">
+		select * from petsitter join member on petsitter.userid = member.userid where status='지원'
+	</select>
+	
+	<!-- 펫시터 지원서 보기 -->
+	<select id="view" resultType="Petsitter_MemberVO">
+		select * from petsitter join member on petsitter.userid = member.userid where uid=#{uid}
+	</select>
+	
+	<!-- 펫시터 허가 -->
+	<update id="permit">
+		update member set role='펫시터' where userid=#{userid}
+	</update>
+	
+	<!-- 펫시터 허가 -->
+	<update id="permit2">
+		update petsitter set status='승인',permitdate=#{permitdate} where userid=#{userid}
+	</update>
+	
+	<!-- 펫시터 승인 완료 메세지 보내기 -->
+	<insert id="petsitterMsg">
+		insert into push values (null,#{userid},#{text},#{pushtime},#{status})
+	</insert>
+	
+	<!-- 펫시터 수 -->
+	<select id="petsitterCount" resultType="int">
+		select count(*) from member where role='펫시터'
+	</select>
+	
+	<!-- 펫시터 리스트 -->
+	<select id="petsitterList" resultType="Petsitter_MemberVO">
+		select * from petsitter join member on petsitter.userid = member.userid where member.role='펫시터' order by uid desc
+	</select>
+	
+	<!-- 펫시터 수 - 검색 -->
+	<select id="petsitterSearchCount" resultType="int">
+		select count(*) from member where role='펫시터' and username like concat('%',#{search},'%')
+	</select>
+	
+	<!-- 펫시터 리스트 - 검색 -->
+	<select id="petsitterSearchList" resultType="Petsitter_MemberVO">
+		select * from petsitter join member on petsitter.userid = member.userid where member.role='펫시터' and member.username like concat('%',#{search},'%') order by uid desc
+	</select>
+	
+</mapper>

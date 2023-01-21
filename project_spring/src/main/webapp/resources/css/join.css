@@ -1,0 +1,50 @@
+@charset "UTF-8";
+
+.table_join_form { /* 회원가입 테이블 위아래 간격 띄우기 */
+	margin-top:50px;
+	margin-bottom:50px;
+}
+
+.span_join_title { /* 회원가입 항목 폰트 */
+	font-size:16px;
+	font-weight:bold;
+}
+
+.input_join { /* 회원가입 작성란 */
+	width:300px;
+	height:35px;
+	padding:5px;
+	font-family: 'NEXON Lv2 Gothic';
+	font-size:16px;
+}
+
+.td_text { /* 알림 문구 출력 부분 높이 설정 */
+	height:40px;
+	font-size:14px;
+}
+
+.table_zipcode { /* 회원가입 주소 테이블 */
+	border:0px;
+}
+
+.btn_zipcode { /* 우편번호 찾기 버튼 */
+	width:145px;
+	height:35px;
+	border:1px solid #eba070;
+	background-color:#ffffff;
+	color:#eba070;
+    font-family: 'NEXON Lv2 Gothic';
+    font-size:16px;
+    cursor:pointer;
+}
+
+.btn_form { /* 회원가입 버튼 */
+    width:150px;
+    height:35px;
+    border:0px;
+    background-color:#eba070;
+    color:#ffffff;
+    font-family: 'NEXON Lv2 Gothic';
+    font-size:16px;
+    cursor:pointer;
+}

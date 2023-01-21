@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.mapper.PetsitterMapper">
+
+	<!-- 예약 목록 넘버링 -->
+	<select id="count" resultType="int">
+		select count(distinct reservedate) from reservation where petsitter=#{session_id}
+	</select>
+	
+	<!-- 예약 목록 -->
+	<select id="reserve" resultType="ReservationVO">
+		select * from reservation join member on reservation.userid = member.userid where petsitter=#{userid} group by reservedate order by reservedate desc limit #{pageStart},#{amount}
+	</select>
+	
+	<!-- 예약 상세보기 - 예약 시간 불러오기 -->
+	<select id="reserveTime" resultType="ReservationVO">
+		select * from reservation where reservation.uid=#{uid}
+	</select>
+	
+	<!-- 예약회원 -->
+	<select id="member" resultType="MemberVO">
+		select * from reservation join member on reservation.userid = member.userid where uid=#{uid}
+	</select>
+	
+	<!-- 예약 상세보기 - 반려동물 리스트 -->
+	<select id="reservePet" resultType="PetVO">
+		select * from reservation join pet on reservation.pet = pet.petuid where reservedate=#{reservetime};
+	</select>
+	
+	<!-- 예약 상세보기 - 반려동물 자세히 보기 -->
+	<select id="detailPet" resultType="PetVO">
+		select * from pet where petuid=#{petuid}
+	</select>
+	
+	<!-- 예약 승인 - 상태 변경, 승인 시간 추가 -->
+	<update id="reservePermit">
+		update reservation set status='결제 대기',permitdate=#{permitdate} where reservedate=#{reservedate}
+	</update>
+	
+	<!-- 승인 메세지 보내기 -->
+	<insert id="reservePush">
+		insert into push values (null,#{userid},#{text},#{pushtime},#{status})
+	</insert>
+	
+</mapper>

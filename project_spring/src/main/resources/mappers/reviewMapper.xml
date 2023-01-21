@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.mapper.ReviewMapper">
+
+	<!-- 리뷰 - 전체 리스트 -->
+	<select id="reviewList" resultType="ReviewVO">
+		select * from review order by reviewuid desc
+	</select>
+	
+	<!-- 리뷰 - 전체 리뷰 수 -->
+	<select id="reviewCount" resultType="int">
+		select count(*) from review
+	</select>
+	
+	<!-- 리뷰 - 검색 리뷰 수 -->
+	<select id="searchCount" resultType="int">
+		select count(*) from review where review.petsittername like CONCAT('%',#{search},'%') 
+	</select>
+	
+	<!-- 리뷰 - 페이징 리스트 -->
+	<select id="reviewPagingList" resultType="ReviewVO">
+		select * from review join member on review.userid = member.userid order by reviewuid desc limit #{pageStart},#{amount}
+	</select>
+	
+	<!-- 리뷰 - 검색 페이징 리스트 -->
+	<select id="reviewSearchPaging" resultType="ReviewVO">
+		select * from review join member on review.userid = member.userid where review.petsittername like CONCAT('%',#{search},'%') order by reviewuid desc limit #{pageStart},#{amount}
+	</select>
+	
+	<!-- 리뷰 모델 불러오기 -->
+	<select id="reviewInfo" resultType="ReviewVO">
+		select * from review where reviewuid=#{reviewuid}
+	</select>
+	
+	<!-- 리뷰 - 조회수 +1 -->
+	<update id="reviewHitUp">
+		update review set hit=#{hit}+1 where reviewuid=#{reviewuid}
+	</update>
+	
+	<!-- 리뷰 - 디테일 -->
+	<select id="reviewDetail" resultType="ReviewVO">
+		select * from review where reviewuid=#{reviewuid}
+	</select>
+	
+	<!-- 리뷰 - 회원 정보 -->
+	<select id="reviewUser" resultType="MemberVO">
+		select * from member where userid=#{userid}
+	</select>
+	
+	<!-- 리뷰 - 펫시터 정보 -->
+	<select id="reviewPetsitter" resultType="Review_PetsitterVO">
+		select * from review join profile on review.petsitter = profile.userid join member on review.petsitter = member.userid where review.reviewuid=#{reviewuid}
+	</select>
+	
+	<!-- 리뷰 - 펫시터 불러오기 -->
+	<select id="reviewDetailPetsitter" resultType="Review_PetsitterVO">
+		select * from review join profile on review.petsitter = profile.userid join member on review.petsitter = member.userid where review.reviewuid=#{reviewuid}
+	</select>
+	
+	<!-- 글번호 불러오기 -->
+	<select id="postUid" resultType="PostVO">
+		select * from post where petsitterid=#{petsitter}
+	</select>
+	
+	<!-- 리뷰 - 삭제 -->
+	<delete id="reviewDelete">
+		delete from review where reviewuid=#{reviewuid}
+	</delete>
+	
+	<!-- 리뷰 - 수정 페이지 -->
+	<select id="reviewEdit" resultType="ReviewVO">
+		select * from review where reviewuid=#{reviewuid}
+	</select>
+	
+	<!-- 리뷰 - 데이터 수정 -->
+	<update id="reviewEditPost">
+		update review set title=#{title},contents=#{contents} where reviewuid=#{reviewuid}
+	</update>
+	
+	<!-- 리뷰 - 메인 페이지 -->
+	<select id="reviewSlide" resultType="ReviewVO">
+		select * from review join member on review.userid = member.userid where preview is not null order by reviewuid desc
+	</select>
+	
+</mapper>

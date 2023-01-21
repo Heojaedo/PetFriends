@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.mapper.MemberMapper">
+
+	<insert id="insert">
+		insert into member values (#{userid},#{userpw},#{username},#{email},#{phone},#{zipcode},#{address},#{detailaddr},#{extraaddr},#{photo},#{joindate},#{role})
+	</insert>
+	
+	<!-- 회원가입 - 아이디 체크 -->
+	<select id="idCheck" resultType="int">
+		select count(userid) from member where userid=#{userid}
+	</select>
+	
+	<!-- 회원가입 - 이메일 체크 -->
+	<select id="emailCheck" resultType="int">
+		select count(email) from member where email=#{email}
+	</select>
+	
+	<select id="select" resultType="MemberVO">
+		select * from member where userid=#{userid} and userpw=#{userpw}
+	</select>
+	
+	<!-- 알림 확인 -->
+	<select id="pushCheck" resultType="PushVO">
+		select * from push where userid=#{userid} and status="" order by uid desc limit 1
+	</select>
+	
+	<!-- 알림 상태 변경 -->
+	<update id="pushChange">
+		update push set status="y" where userid=#{userid} and status="" order by uid desc limit 1
+	</update>
+	
+	<!-- 예약 넘버링 -->
+	<select id="reserveCount" resultType="int">
+		select count(distinct reservedate) from reservation where userid=#{session_id}
+	</select>
+	
+	<!-- 예약내역 -->
+	<select id="reservePagingList" resultType="Reservation_PetVO">
+		select * from reservation join pet on reservation.pet = pet.petuid join member on reservation.petsitter = member.userid where reservation.userid=#{userid} group by reservedate order by reservedate desc limit #{pageStart},#{amount}
+	</select>
+	
+	<!-- 예약 상세보기 - 예약 시간 불러오기 -->
+	<select id="reserveTime" resultType="ReservationVO">
+		select * from reservation where reservation.uid=#{uid}
+	</select>
+	
+	<!-- 예약 상세보기 - 펫시터 정보 -->
+	<select id="petsitterProfile" resultType="Petsitter_MemberVO">
+		select * from reservation join profile on reservation.petsitter = profile.userid join member on reservation.petsitter = member.userid where reservation.petsitter=#{petsitter} group by petsitter
+	</select>
+	
+	<!-- 예약 상세보기 - 펫시터 프로필 보기 -->
+	<select id="petsitterProfile2" resultType="Petsitter_MemberVO">
+		select * from reservation join profile on reservation.petsitter = profile.userid join member on reservation.petsitter = member.userid where reservation.uid=#{uid}
+	</select>
+	
+	<!-- 예약 상세보기 - 반려동물 리스트 -->
+	<select id="reservePet" resultType="PetVO">
+		select * from reservation join pet on reservation.pet = pet.petuid where reservedate=#{reservetime};
+	</select>
+	
+	<!-- 결제 정보 - 펫시터 -->
+	<select id="payInfo" resultType="PayInfoVO">
+		select * from reservation join profile on reservation.petsitter = profile.userid join member on reservation.petsitter = member.userid where reservation.uid=#{uid}
+	</select>
+	
+	<!-- 결제 내역 저장 -->
+	<insert id="paymentComplete">
+		insert into payment values (#{reserveuid},#{payuid},#{userid},#{price},#{paydate})
+	</insert>
+	
+	<!-- 결제 내역 보기 -->
+	<select id="paymentInfo" resultType="PaymentVO">
+		select * from payment where reserveuid=#{uid}
+	</select>
+	
+	<!-- 예약 테이블 결제 상태 변경 -->
+	<update id="statusChange">
+		update reservation set status='결제 완료' where reservedate=#{reservetime}
+	</update>
+	
+	<!-- 돌봄 완료 상태 변경 -->
+	<update id="sittingComplete">
+		update reservation set status='완료' where reservedate=#{reservetime}
+	</update>
+	
+	<!-- 체크아웃 날짜 불러오기 -->
+	<select id="checkoutdate" resultType="ReservationVO">
+		select * from reservation
+	</select>
+	
+	<!-- 예약 끝 - 예약 상태 변경하기 -->
+	<update id="reserveComplete">
+		update reservation set status='완료' where reservedate=#{reservedate} and status not in ('예약 취소')
+	</update>
+	
+	<!-- 예약 자동 취소 -->
+	<update id="reserveCancel">
+		update reservation set status='예약 취소' where reservedate=#{reservedate}
+	</update>
+	
+	<!-- 결제 대기 예약 리스트 -->
+	<select id="beforePayment" resultType="ReservationVO">
+		select * from reservation where status='결제 대기'
+	</select>
+	
+	<select id="edit" resultType="MemberVO">
+		select * from member where userid=#{session_id}
+	</select>
+	
+	<!-- 정보수정 - 이메일 체크 -->
+	<select id="editemailCheck" resultType="int">
+		select count(email) from member where userid=#{userid} and email=#{email}
+	</select>
+	
+	<!-- 정보수정 - 이메일 중복 체크 -->
+	<select id="editemailCheck2" resultType="int">
+		select count(email) from member where email=#{email}
+	</select>
+	
+	<update id="update">
+		update member set userpw=#{userpw},email=#{email},zipcode=#{zipcode},address=#{address},detailaddr=#{detailaddr},extraaddr=#{extraaddr},photo=#{photo} where userid=#{userid}
+	</update>
+	
+	<!-- 정보수정 - 비밀번호 변경 x -->
+	<update id="update2">
+		update member set email=#{email},zipcode=#{zipcode},address=#{address},detailaddr=#{detailaddr},extraaddr=#{extraaddr},photo=#{photo} where userid=#{userid}
+	</update>
+	
+	<!-- 반려동물 카드 -->
+	<select id="mypet" resultType="PetVO">
+		select * from pet where userid=#{session_id}
+	</select>
+	
+	<!-- 반려동물 등록 -->
+	<insert id="registPet">
+		insert into pet values (null,#{userid},#{type},#{petname},#{breed},#{year},#{month},#{day},#{weight},#{sex},#{neutering},#{registry},#{q1},#{q2},#{q3},#{q4},#{q5},#{q6},#{q7},#{q8},#{q9},#{hospital},#{tel1},#{tel2},#{tel3},#{address},#{photo},#{regidate})
+	</insert>
+	
+	<!-- 반려동물 삭제 -->
+	<delete id="deletePet">
+		delete from pet where petuid=#{petuid}
+	</delete>
+	
+	<!-- 반려동물 카드 수정 화면 -->
+	<select id="editPet" resultType="PetVO">
+		select * from pet where petuid=#{petuid}
+	</select>
+	
+	<!-- 반려동물 카드 수정 -->
+	<update id="updatePet">
+		update pet set type=#{type},petname=#{petname},breed=#{breed},year=#{year},month=#{month},day=#{day},weight=#{weight},sex=#{sex},neutering=#{neutering},registry=#{registry},q1=#{q1},q2=#{q2},q3=#{q3},q4=#{q4},q5=#{q5},q6=#{q6},q7=#{q7},q8=#{q8},q9=#{q9},hospital=#{hospital},tel1=#{tel1},tel2=#{tel2},tel3=#{tel3},address=#{address},photo=#{photo} where petuid=#{petuid}
+	</update>
+	
+	<!-- 펫시터 지원하기 -->
+	<insert id="petsitter">
+		insert into petsitter values (null,#{userid},#{introduce},#{q1},#{q2},#{q3},#{q4},#{q5},#{q6},#{appdate},#{status},#{permitdate})
+	</insert>
+	
+	<!-- 펫시터 중복지원 방지 -->
+	<select id="petsitterIdCheck" resultType="int">
+		select count(*) from petsitter where userid=#{session_id} 
+	</select>
+	
+	<!-- 관리자, 펫시터, 회원 체크 -->
+	<select id="roleCheck" resultType="MemberVO">
+		select * from member where userid=#{session_id}
+	</select>
+	
+	<!-- 알림 - 펫시터 지원수 -->
+	<select id="petsitterCount" resultType="int">
+		select count(*) from petsitter where status='지원'
+	</select>
+	
+	<!-- 알림 - 펫시터 메뉴 - 상태가 '예약'인 예약 갯수 -->
+	<select id="petsitterReserveCount" resultType="int">
+		select count(distinct reservedate) from reservation where petsitter=#{session_id} and status='예약'
+	</select>
+	
+	<!-- 알림 - 회원 - 결제 대기 상태인 예약 갯수 -->
+	<select id="paymentCount" resultType="int">
+		select count(distinct reservedate) from reservation where userid=#{session_id} and status='결제 대기'
+	</select>
+	
+</mapper>

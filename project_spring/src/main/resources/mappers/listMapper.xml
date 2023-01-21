@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.mapper.ListMapper">
+
+	<!-- 리스트 -->
+	<select id="list" resultType="Post_ProfileVO">
+		select * from post join profile on post.petsitterid = profile.userid and post.regidate = profile.regidate inner join member on post.petsitterid = member.userid
+	</select>
+	
+	<!-- 리스트 - 검색 -->
+	<select id="listSearch" resultType="Post_ProfileVO">
+		<![CDATA[
+		select * from post 
+			join profile on post.petsitterid = profile.userid and post.regidate = profile.regidate 
+			inner join member on post.petsitterid = member.userid 
+			where post.price>=#{payMin} and post.price<=#{payMax} and profile.addr like CONCAT('%',#{site},'%')
+		]]>
+	</select>
+	
+	<!-- 리스트 - 금액 검색 x -->
+	<select id="listSearch2" resultType="Post_ProfileVO">
+		<![CDATA[
+		select * from post 
+			join profile on post.petsitterid = profile.userid and post.regidate = profile.regidate 
+			inner join member on post.petsitterid = member.userid 
+			where profile.addr like CONCAT('%',#{site},'%')
+		]]>
+	</select>
+	
+	<!-- 리뷰 수 -->
+	<select id="reviewCount" resultType="int">
+		select count(*) from review where petsittername=#{petsittername}
+	</select>
+	
+	<!-- 업로드 파일 리스트 -->
+	<select id="uploadlist" resultType="UploadFileDTO">
+		select filename from post join upload on post.uid = upload.postuid where post.uid=#{uid} and status='Y'
+	</select>
+	
+	<!-- View 페이지 - 업로드 이미지 -->
+	<select id="postImage" resultType="UploadVO">
+		select * from upload where postuid=#{postuid} and status='Y'
+	</select>
+	
+	<!-- View 페이지 - 펫시터 -->
+	<select id="postView" resultType="Post_PetsitterVO">
+		select * from post join profile on post.petsitterid = profile.userid and post.regidate = profile.regidate inner join member on post.petsitterid = member.userid where post.uid=#{postuid}
+	</select>
+	
+	<!-- 펫시터 프로필 보기 -->
+	<select id="petsitterView" resultType="Post_PetsitterVO">
+		select * from post join profile on post.petsitterid = profile.userid and post.regidate = profile.regidate inner join member on post.petsitterid = member.userid where post.uid=#{postuid}
+	</select>
+	
+	<!-- 펫시터 반려동물 보기 -->
+	<select id="petsitterPetView" resultType="PetVO">
+		select * from pet where petuid=#{petuid}
+	</select>
+	
+	<!-- View 페이지 - 펫시터 반려동물 불러오기 -->
+	<select id="petsitterPet" resultType="Post_PetsitterPetVO">
+		select * from post join pet on post.petsitterid = pet.userid where post.uid=#{postuid}
+	</select>
+	
+	<!-- View 페이지 - 펫시터 리뷰 -->
+	<select id="petsitterReview" resultType="ReviewVO">
+		select * from review join member on review.userid = member.userid where petsitter=#{petsitter} order by reviewuid desc limit 0,5
+	</select>
+	
+	<!-- View 페이지 - 사용자 반려동물 리스트 -->
+	<select id="pet" resultType="PetVO">
+		select * from pet where userid=#{session_id}
+	</select>
+	
+	<!-- 예약가능일 조회 -->
+	<select id="dateCheck" resultType="ReservationVO">
+		select checkindate,checkoutdate from reservation join post on reservation.petsitter = post.petsitterid where post.uid=#{postuid} and reservation.status not in ('예약 취소')
+	</select>
+	
+	<!-- 등록된 포스트 체크 -->
+	<select id="postCheck" resultType="int">
+		select count(*) from post where petsitterid=#{session_id}
+	</select>
+	
+	<!-- 글쓰기 페이지 펫시터 정보 불러오기 -->
+	<select id="info" resultType="MemberVO">
+		select * from member join petsitter on member.userid = petsitter.userid where member.userid=#{userid}
+	</select>
+	
+	<!-- 포스트 수정화면 -->
+	<select id="postEdit" resultType="Post_EditVO">
+		select * from post join member on post.petsitterid = member.userid join profile on post.petsitterid = profile.userid where petsitterid=#{session_id}
+	</select>
+	
+	<!-- 프로필 업로드 -->
+	<insert id="profile">
+		insert into profile values (#{userid},#{addr},#{title},#{introduce},#{op1},#{op2},#{op3},#{op4},#{regidate})
+	</insert>
+	
+	<!-- 프로필 수정 -->
+	<update id="profileEdit">
+		update profile set addr=#{addr},title=#{title},introduce=#{introduce},op1=#{op1},op2=#{op2},op3=#{op3},op4=#{op4} where userid=#{userid}
+	</update>
+	
+	<!-- 포스트 업로드 -->
+	<insert id="post">
+		insert into post values (null,#{petsitterid},#{petsittername},#{price},#{regidate},'')
+		<selectKey keyProperty="uid" resultType="int" order="AFTER">
+			select last_insert_id()
+		</selectKey>
+	</insert>
+	
+	<!-- 포스트 수정 -->
+	<update id="postUpdate">
+		update post set price=#{price},editdate=#{editdate} where uid=#{uid}
+	</update>
+	
+	<!-- 첨부파일 삭제 처리 -->
+	<update id="delFile">
+		update upload set status='N' where filenum=#{filenum}
+	</update>
+	
+	<!-- 프로필 삭제 -->
+	<delete id="profileDelete">
+		delete from profile where userid=#{session_id}
+	</delete>
+	
+	<!-- 포스트 삭제 -->
+	<delete id="postDelete">
+		delete from post where uid=#{uid}
+	</delete>
+	
+	<!-- 파일 데이터베이스 업로드 -->
+	<insert id="upload" parameterType="HashMap">
+		insert into upload values (null,#{postuid},#{original},#{filename},#{filesize},#{uploadtime},'Y')
+	</insert>
+	
+	<!-- 예약하기 -->
+	<insert id="reserve">
+		insert into reservation values (null,#{userid},#{pet},#{petsitter},#{checkindate},#{checkoutdate},#{price},#{status},#{reservedate},'')
+	</insert>
+	
+	<!-- 예약 알림 보내기 -->
+	<insert id="pushReserve">
+		insert into push values (null,#{userid},#{text},#{pushtime},#{status})
+	</insert>
+	
+	<!-- 리뷰 - 펫시터 정보 -->
+	<select id="reviewInfo" resultType="ReservationVO">
+		select * from reservation where uid=#{uid}
+	</select>
+	
+	<!-- 리뷰 - 펫시터 이름 불러오기 -->
+	<select id="petsitterName" resultType="MemberVO">
+		select * from member where userid=#{petsitter}
+	</select>
+	
+	<!-- 리뷰 작성 -->
+	<insert id="review">
+		insert into review values (null,#{userid},#{petsitter},#{petsittername},#{title},#{contents},#{hit},#{reviewdate},#{preview})
+	</insert>
+	
+</mapper>
