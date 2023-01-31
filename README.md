@@ -44,3 +44,5 @@ Spring Framework
 - 돌봄 서비스 예약
 
 ### 후기
+- 게시판 에디터 (CKEditor)
+- 펫시터 이름으로 검색
